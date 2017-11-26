@@ -1,0 +1,19 @@
+/* Example of CSS for events */
+.myclubapi-events {
+	color: #fff;
+	background: #333;
+	text-align: center;
+}
+
+#myclubapi-event-single p:nth-child(odd) {
+    background: #111;
+}
+
+#myclubapi-event-single p:nth-child(even) {
+    background: #222;
+}
+
+#myclubapi-event-time {
+	color: #FCAF1D;
+	margin-bottom: -12px;
+}
