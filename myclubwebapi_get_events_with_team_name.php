@@ -172,7 +172,7 @@ function getMyClubApiEventsViaGroupName($url, $groupName,$amountOfEvents)
 	// Append group id to api call
 	$url = $url . $groupId;
 	
-	// Get Json with given url, append start_date=YYYY-MM-DD (otherwise api will show second event from yesterday?!)
+	// Get Json with url
 	$url=$url . "&start_date=" . date("Y-m-d");
 	$json=GetMyClubApiJson($url);
 	
@@ -182,14 +182,38 @@ function getMyClubApiEventsViaGroupName($url, $groupName,$amountOfEvents)
 	}
 	$decoded = json_decode($json);
 
-	$returnString = $returnString . "<div class='myclubapi-events'>";
+	// Tidy and put JSON to a class array (for sorting), there is propably a tricky way to sort this decoded JSON objects directly...
+	class Event{
+		public $startsAt;
+		public $endsAt;
+		public $eventName;
+	}
 
-	$i=0;
+	// Push requested amount of events to event arraý	
+	$eventArr=array();
 	foreach ($decoded as $item)
 	{
+		$event=new Event();
+		$event->startsAt=$item->event->starts_at;
+		$event->endsAt=$item->event->ends_at;
+		$event->eventName=$item->event->name;
+	    	array_push($eventArr,$event);
+	}
+	
+	// Sort events by start date
+	usort($eventArr, function($a, $b)
+	{ 
+		return $a->startsAt < $b->startsAt ? -1 : 1;
+	});                                                                                                                                                                                            
+
+	// generate output html
+	$returnString = $returnString . "<div class='myclubapi-events'>";
+	$i=0;
+	foreach ($eventArr as $item)
+	{
 		$returnString = $returnString . "<div id='myclubapi-event-single'>";
-		$returnString = $returnString . "<p id='myclubapi-event-time'>" . TidyTimeStamp($item->event->starts_at). "-" .TidyTimeStampJustTime($item->event->ends_at) ."</p>" ;
-		$returnString = $returnString . "<p id='myclubapi-event-name'>" .$item->event->name. "</p>" ;
+		$returnString = $returnString . "<p id='myclubapi-event-time'>" . TidyTimeStamp($item->startsAt). "-" .TidyTimeStampJustTime($item->endsAt) ."</p>" ;
+		$returnString = $returnString . "<p id='myclubapi-event-name'>" .$item->eventName. "</p>" ;
 		$returnString = $returnString . "</div>";
 		if ($i>=$amountOfEvents)
 			break;
